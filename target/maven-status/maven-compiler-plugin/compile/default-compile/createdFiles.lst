@@ -1,1 +1,5 @@
+org/highpoint/paiwebapp/ExcelParser.class
+org/highpoint/paiwebapp/SearchClient.class
+org/highpoint/paiwebapp/DocxParser.class
 org/highpoint/paiwebapp/HelloServlet.class
+org/highpoint/paiwebapp/HelloServlet$choice.class

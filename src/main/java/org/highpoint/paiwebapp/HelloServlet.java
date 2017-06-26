@@ -4,16 +4,22 @@ package org.highpoint.paiwebapp;
  * Created by alex on 6/19/17.
  */
 
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.*;
 import javax.servlet.ServletException;
-import java.io.PrintWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
-
+@MultipartConfig
 public class HelloServlet extends HttpServlet {
 
     private enum choice{
@@ -56,10 +62,36 @@ public class HelloServlet extends HttpServlet {
             response.setHeader("Access-Control-Max-Age", "86400");
 
         }
+        //System.out.println(IOUtils.toString(request.getReader()));
 
-        System.out.println(IOUtils.toString(request.getReader()));
+        
         //String type = request.getParameter("type");
         //String age = request.getParameter("age");
+        Part file = request.getPart("file");
+        Part tags = request.getPart("tags");
+        Map<String,Object> entries = new HashMap<>();
+
+        InputStream tagsInputStream = tags.getInputStream();
+        JsonParser jsonParser = new JsonParser();
+        JsonObject tagsJsonObject = (JsonObject)jsonParser.parse(new InputStreamReader(tagsInputStream, "UTF-8"));
+        tagsInputStream.close();
+
+        for(String key : tagsJsonObject.keySet()) {
+            if (!key.equals("companyDoc") && !key.equals("additionalTags")) {
+                entries.put(key, tagsJsonObject.get(key).getAsString());
+            }
+        }
+        for (JsonElement e : tagsJsonObject.getAsJsonArray("additionalTags")) {
+            JsonObject innerPair = e.getAsJsonObject();
+            entries.put(innerPair.get("key").getAsString(), innerPair.get("value").getAsString());
+        }
+
+        InputStream fileInputStream = file.getInputStream();
+
+        //below here is where, depending on file type, create parser object and then call searchclient methods using
+        //returned json string from parser
+
+
 
         JsonObject myObj = new JsonObject();
         myObj.addProperty("success", true);

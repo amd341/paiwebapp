@@ -1,18 +1,12 @@
 package org.highpoint.paiwebapp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.nio.entity.NStringEntity;
-import org.apache.http.util.EntityUtils;
+
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.usermodel.*;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.RestClient;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -191,7 +185,7 @@ public class DocxParser {
         return sections;
     }
 
-    private List<String> getSectionsAsStrings() throws JsonProcessingException {
+    public List<String> getSectionsAsStrings() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String,Object> section = new HashMap<>();
         List<String> sections = new ArrayList<>();
@@ -250,7 +244,7 @@ public class DocxParser {
         return sections;
     }
 
-    private List<String> getSubSectionsAsStrings() throws JsonProcessingException {
+    public List<String> getSubSectionsAsStrings() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String,Object> section = new HashMap<>();
         List<String> sections = new ArrayList<>();

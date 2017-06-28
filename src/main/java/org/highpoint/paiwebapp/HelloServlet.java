@@ -15,10 +15,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
@@ -51,7 +48,7 @@ public class HelloServlet extends HttpServlet {
         System.out.println(clientOrigin);
 
         PrintWriter out = response.getWriter();
-        response.setContentType("application/json");
+        response.setContentType("application/json; charset=UTF-8");
         response.setHeader("Cache-control", "no-cache, no-store");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Expires", "-1");
@@ -79,8 +76,10 @@ public class HelloServlet extends HttpServlet {
         JsonObject tagsJsonObject = (JsonObject)jsonParser.parse(new InputStreamReader(tagsInputStream, "UTF-8"));
         tagsInputStream.close();
 
+        boolean useHighlighting = tagsJsonObject.get("useHighlighting").getAsBoolean();
+
         for(String key : tagsJsonObject.keySet()) {
-            if (!key.equals("companyDoc") && !key.equals("additionalTags")) {
+            if (!key.equals("companyDoc") && !key.equals("additionalTags") && !key.equals("useHighlighting")) {
                 entries.put(key, tagsJsonObject.get(key).getAsString());
             }
         }
@@ -89,6 +88,8 @@ public class HelloServlet extends HttpServlet {
             entries.put(innerPair.get("key").getAsString(), innerPair.get("value").getAsString());
         }
 
+        //once we have entries, we have to make sure any new tags get put in as keywords, not text
+        SearchClient.mapNewFields("search-elastic-test-yyco5dncwicwd2nufqhakzek2e.us-east-1.es.amazonaws.com", 443, "https", "rfps2", "rfp2", entries);
 
         //finding out which kind of office document the RFP is
         //Choice choice;
@@ -100,7 +101,11 @@ public class HelloServlet extends HttpServlet {
             InputStream filestream = file.getInputStream();
             try {
                 ExcelParser parse = new ExcelParser(filestream, entries, true);
-                tempstr = parse.getJsonHM();
+                if (useHighlighting) {
+                    tempstr = parse.getHighlightedJson();
+                } else {
+                    tempstr = parse.getJsonHM();
+                }
                 //System.out.println(tempstr);
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
@@ -111,7 +116,11 @@ public class HelloServlet extends HttpServlet {
             InputStream filestream = file.getInputStream();
             try {
                 ExcelParser parse = new ExcelParser(filestream, entries, false);
-                tempstr = parse.getJsonHM();
+                if (useHighlighting) {
+                    tempstr = parse.getHighlightedJson();
+                } else {
+                    tempstr = parse.getJsonHM();
+                }
                 //System.out.println(tempstr);
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
@@ -123,7 +132,11 @@ public class HelloServlet extends HttpServlet {
             InputStream filestream = file.getInputStream();
             try {
                 DocxParser parse = new DocxParser(filestream, entries);
-                tempstr = parse.getSections();
+                if (useHighlighting) {
+                    tempstr = parse.getHighlighted();
+                } else {
+                    tempstr = parse.getSubSections();
+                }
                 //System.out.println(tempstr);
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
@@ -143,6 +156,9 @@ public class HelloServlet extends HttpServlet {
         myObj.addProperty("success", true);
 
 
+        JsonObject indexObj = new JsonObject();
+        JsonObject emptyObj = new JsonObject();
+        indexObj.add("index", emptyObj);
 
         JsonArray jarray = new JsonArray();
 
@@ -151,10 +167,13 @@ public class HelloServlet extends HttpServlet {
             JsonObject innerObject = new JsonObject();
             for(Map.Entry<String,Object> tempentry: tempmap.entrySet()){
                 //RIGHT HERE BUDDY
-                innerObject.addProperty(tempentry.getKey(), tempentry.getValue().toString());
-                System.out.println(innerObject);
+                Gson gson = new Gson();
+
+                innerObject.addProperty(tempentry.getKey(), tempentry.getValue().toString().replaceAll("[\\u2018\\u2019]", "'")
+                        .replaceAll("[\\u201C\\u201D]", "\""));
             }
             //System.out.println(jarray);
+            jarray.add(indexObj);
             jarray.add(innerObject);
             System.out.println(jarray);
             counter = counter + 1;

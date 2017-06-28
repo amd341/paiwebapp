@@ -103,9 +103,8 @@ public class ExcelParser {
         return(sectionsList);
     }
 
-    public List<String> getHighlightedJsonStrings() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<String> sections = new ArrayList<>();
+    public List<Map<String,Object>> getHighlightedJson() throws JsonProcessingException {
+        List<Map<String,Object>> sections = new ArrayList<>();
         Map<String,Object> section = new HashMap<>();
         String question = "no question";
         String body;
@@ -139,7 +138,7 @@ public class ExcelParser {
                                         section.put("question", question);
                                         section.put("body", body);
                                         section.putAll(entries);
-                                        sections.add(objectMapper.writeValueAsString(section));
+                                        sections.add(section);
                                         section.clear();
                                         gotQuestion = false;
                                     } else if (cell.getCellTypeEnum() == CellType.STRING) {
@@ -147,7 +146,7 @@ public class ExcelParser {
                                         section.put("question", question);
                                         section.put("body", body);
                                         section.putAll(entries);
-                                        sections.add(objectMapper.writeValueAsString(section));
+                                        sections.add(section);
                                         section.clear();
                                         gotQuestion = false;
 
@@ -194,7 +193,7 @@ public class ExcelParser {
                                         section.put("question", question);
                                         section.put("body", body);
                                         section.putAll(entries);
-                                        sections.add(objectMapper.writeValueAsString(section));
+                                        sections.add(section);
                                         section.clear();
                                         gotQuestion = false;
                                     } else if (cell.getCellTypeEnum() == CellType.STRING) {
@@ -202,7 +201,7 @@ public class ExcelParser {
                                         section.put("question", question);
                                         section.put("body", body);
                                         section.putAll(entries);
-                                        sections.add(objectMapper.writeValueAsString(section));
+                                        sections.add(section);
                                         section.clear();
                                         gotQuestion = false;
 

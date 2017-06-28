@@ -225,4 +225,59 @@ public class ExcelParser {
 
     }
 
+
+    public List<Map<String,Object>> getJsonHM() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String,Object> sectionHash = new HashMap<>();
+        List<Map<String,Object>> sectionsList = new ArrayList<>();
+        boolean isBlankRow = true;
+
+        Sheet datatypeSheet = workbook.getSheetAt(0);
+        StringBuilder body = new StringBuilder();
+        //iterator to iterate through sheets
+        //Iterator<Sheet> sheetIterator = workbook.iterator();
+
+        int count = 0;
+        while(count < workbook.getNumberOfSheets()){
+            datatypeSheet = workbook.getSheetAt(count);
+
+            sectionHash.putAll(entries);
+            sectionHash.put("heading", workbook.getSheetName(count));
+
+            Iterator<Row> iterator = datatypeSheet.iterator();
+
+            while (iterator.hasNext()) {
+
+
+                Row currentRow = iterator.next();
+                Iterator<Cell> cellIterator = currentRow.iterator();
+
+                while (cellIterator.hasNext()) {
+                    Cell currentCell = cellIterator.next();
+
+                    if (currentCell.getCellTypeEnum() == CellType.STRING) {
+                        body.append(currentCell.getStringCellValue()).append("--"); //should the -- be removed?
+                        isBlankRow = false;
+                    }
+                    else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
+                        body.append(currentCell.getNumericCellValue()).append("--"); //same as above
+                        isBlankRow = false;
+                    }
+                }
+                if (!isBlankRow){
+                    body.append("\n");
+                    isBlankRow = true;
+                }
+
+            }
+            count++;
+            sectionHash.put("body",body);
+            sectionsList.add(sectionHash);
+            sectionHash = new HashMap<>();
+            body = new StringBuilder();
+        }
+
+        return(sectionsList);
+    }
+
 }

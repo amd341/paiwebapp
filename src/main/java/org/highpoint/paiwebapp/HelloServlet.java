@@ -15,15 +15,18 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+
 @MultipartConfig
 public class HelloServlet extends HttpServlet {
 
-    private enum choice{
-        DOCX, XLS, XLSX
+    private enum Choice{
+        DOCX, XLS, XLSX, ERROR
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -48,7 +51,7 @@ public class HelloServlet extends HttpServlet {
         System.out.println(clientOrigin);
 
         PrintWriter out = response.getWriter();
-        response.setContentType("text/html");
+        response.setContentType("application/json");
         response.setHeader("Cache-control", "no-cache, no-store");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Expires", "-1");
@@ -86,17 +89,82 @@ public class HelloServlet extends HttpServlet {
             entries.put(innerPair.get("key").getAsString(), innerPair.get("value").getAsString());
         }
 
-        InputStream fileInputStream = file.getInputStream();
+
+        //finding out which kind of office document the RFP is
+        //Choice choice;
+        List<Map<String,Object>> tempstr = null;
+        String contentType = file.getContentType();
+        if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")){
+            System.out.println("XLSX");
+            //choice = Choice.XLSX;
+            InputStream filestream = file.getInputStream();
+            try {
+                ExcelParser parse = new ExcelParser(filestream, entries, true);
+                tempstr = parse.getJsonHM();
+                //System.out.println(tempstr);
+            } catch (InvalidFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (contentType.equals("application/vnd.ms-excel")){
+            System.out.println("XLS");
+            InputStream filestream = file.getInputStream();
+            try {
+                ExcelParser parse = new ExcelParser(filestream, entries, false);
+                tempstr = parse.getJsonHM();
+                //System.out.println(tempstr);
+            } catch (InvalidFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")){
+            System.out.println("DOCX");
+            //choice = Choice.DOCX;
+            InputStream filestream = file.getInputStream();
+            try {
+                DocxParser parse = new DocxParser(filestream, entries);
+                tempstr = parse.getSections();
+                //System.out.println(tempstr);
+            } catch (InvalidFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+            System.out.println("ERROR");
+            //choice = Choice.ERROR;
+        }
+
 
         //below here is where, depending on file type, create parser object and then call searchclient methods using
-        //returned json string from parser
-
+        //returned json string from parse
 
 
         JsonObject myObj = new JsonObject();
         myObj.addProperty("success", true);
-        myObj.addProperty("secondproperty", "george");
-        out.println(myObj.toString());
+
+
+
+        JsonArray jarray = new JsonArray();
+
+        int counter = 0;
+        for(Map<String,Object> tempmap: tempstr){
+            JsonObject innerObject = new JsonObject();
+            for(Map.Entry<String,Object> tempentry: tempmap.entrySet()){
+                //RIGHT HERE BUDDY
+                innerObject.addProperty(tempentry.getKey(), tempentry.getValue().toString());
+                System.out.println(innerObject);
+            }
+            //System.out.println(jarray);
+            jarray.add(innerObject);
+            System.out.println(jarray);
+            counter = counter + 1;
+        }
+
+        myObj.add("stuff", jarray);
+
+        //myObj.addProperty("stuff", tempstr.toString());
+        System.out.println(myObj);
+        out.println(myObj);
 
 
         out.close();

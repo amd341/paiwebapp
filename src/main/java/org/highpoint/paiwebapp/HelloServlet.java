@@ -28,7 +28,31 @@ public class HelloServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        doPost(request, response);
+        //get list of allowed origin domains
+        List<String> incomingURLs = Arrays.asList(getServletContext().getInitParameter("incomingURLs").trim().split(","));
+
+        //get client's origin domain
+        String clientOrigin = request.getHeader("origin");
+        System.out.println(clientOrigin);
+
+        PrintWriter out = response.getWriter();
+        response.setContentType("text/html; charset=UTF-8");
+        response.setHeader("Cache-control", "no-cache, no-store");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "-1");
+
+        //checking if client's origin is allowed
+        int originCheckIndex = incomingURLs.indexOf(clientOrigin);
+        if (originCheckIndex != -1){
+            response.setHeader("Access-Control-Allow-Origin", clientOrigin);
+            response.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS,GET");
+            response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+            response.setHeader("Access-Control-Max-Age", "86400");
+
+            out.println("<h1>Request received</h1>");
+            out.close();
+        }
+
     }
 
     protected void doOptions(HttpServletRequest request, HttpServletResponse response)
@@ -78,6 +102,7 @@ public class HelloServlet extends HttpServlet {
 
         boolean useHighlighting = tagsJsonObject.get("useHighlighting").getAsBoolean();
 
+        System.out.println(useHighlighting);
         for(String key : tagsJsonObject.keySet()) {
             if (!key.equals("companyDoc") && !key.equals("additionalTags") && !key.equals("useHighlighting")) {
                 entries.put(key, tagsJsonObject.get(key).getAsString());
@@ -118,6 +143,7 @@ public class HelloServlet extends HttpServlet {
                 ExcelParser parse = new ExcelParser(filestream, entries, false);
                 if (useHighlighting) {
                     tempstr = parse.getHighlightedJson();
+
                 } else {
                     tempstr = parse.getJsonHM();
                 }

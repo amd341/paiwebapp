@@ -139,7 +139,7 @@ public class ExcelParser {
                                         section.put("body", body);
                                         section.putAll(entries);
                                         sections.add(section);
-                                        section.clear();
+                                        section = new HashMap<>();
                                         gotQuestion = false;
                                     } else if (cell.getCellTypeEnum() == CellType.STRING) {
                                         body = cell.getRichStringCellValue().getString();
@@ -147,7 +147,7 @@ public class ExcelParser {
                                         section.put("body", body);
                                         section.putAll(entries);
                                         sections.add(section);
-                                        section.clear();
+                                        section = new HashMap<>();
                                         gotQuestion = false;
 
                                     }
@@ -194,7 +194,7 @@ public class ExcelParser {
                                         section.put("body", body);
                                         section.putAll(entries);
                                         sections.add(section);
-                                        section.clear();
+                                        section = new HashMap<>();
                                         gotQuestion = false;
                                     } else if (cell.getCellTypeEnum() == CellType.STRING) {
                                         body = cell.getRichStringCellValue().getString();
@@ -202,7 +202,7 @@ public class ExcelParser {
                                         section.put("body", body);
                                         section.putAll(entries);
                                         sections.add(section);
-                                        section.clear();
+                                        section = new HashMap<>();
                                         gotQuestion = false;
 
                                     }
@@ -219,7 +219,6 @@ public class ExcelParser {
 
 
         }
-
         return sections;
 
     }

@@ -8,10 +8,7 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.*;
 import javax.servlet.ServletException;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,6 +29,9 @@ public class HelloServlet extends HttpServlet {
         List<String> incomingURLs = Arrays.asList(getServletContext().getInitParameter("incomingURLs").trim().split(","));
 
         //get client's origin domain
+        for (String s : Collections.list(request.getHeaderNames())) {
+            System.out.println(s);
+        }
         String clientOrigin = request.getHeader("origin");
         System.out.println(clientOrigin);
 
@@ -41,6 +41,11 @@ public class HelloServlet extends HttpServlet {
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Expires", "-1");
 
+
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS,GET");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        response.setHeader("Access-Control-Max-Age", "86400");
         //checking if client's origin is allowed
         int originCheckIndex = incomingURLs.indexOf(clientOrigin);
         if (originCheckIndex != -1){
@@ -50,8 +55,11 @@ public class HelloServlet extends HttpServlet {
             response.setHeader("Access-Control-Max-Age", "86400");
 
             out.println("<h1>Request received</h1>");
-            out.close();
+            //out.close();
         }
+
+        out.println("<h1>Request received</h1>");
+        out.close();
 
     }
 

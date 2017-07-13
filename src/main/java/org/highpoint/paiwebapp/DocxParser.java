@@ -63,7 +63,7 @@ public class DocxParser {
                         if (run.getColor() != null) {
                             if (run.getColor().equals(DOCX_QUESTION_COLOR)) {
                                 if (body.length() > 0) {
-                                    section.put("body", body);
+                                    section.put("body", body.toString());
                                     section.put("question", question);
                                     section.putAll(entries);
                                     sections.add(section);
@@ -94,7 +94,7 @@ public class DocxParser {
                                     if (run.getColor() != null) {
                                         if (run.getColor().equals(DOCX_QUESTION_COLOR)) {
                                             if (body.length() > 0) {
-                                                section.put("body", body);
+                                                section.put("body", body.toString());
                                                 section.put("question", question);
                                                 section.putAll(entries);
                                                 sections.add(section);
@@ -116,7 +116,7 @@ public class DocxParser {
             }
         }
 
-        section.put("body", body);
+        section.put("body", body.toString());
         section.put("question", question);
         section.putAll(entries);
         sections.add(section);

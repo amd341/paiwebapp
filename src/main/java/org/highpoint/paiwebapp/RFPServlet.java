@@ -2,6 +2,8 @@ package org.highpoint.paiwebapp;
 
 /**
  * Created by alex on 6/19/17.
+ * Modified by alex and brenden
+ * servlet class for ingesting documents to be parsed
  */
 
 import javax.servlet.annotation.MultipartConfig;
@@ -10,30 +12,16 @@ import javax.servlet.ServletException;
 import java.io.*;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.google.gson.*;
-import org.apache.commons.io.IOUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 @MultipartConfig
-public class HelloServlet extends HttpServlet {
+public class RFPServlet extends HttpServlet {
 
-    private enum Choice{
-        DOCX, XLS, XLSX, ERROR
-    }
-
+    /** really basic implementation for GET, allows all origins and simply returns "Request received." */
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        //get list of allowed origin domains
-        List<String> incomingURLs = Arrays.asList(getServletContext().getInitParameter("incomingURLs").trim().split(","));
-
-        //get client's origin domain
-        for (String s : Collections.list(request.getHeaderNames())) {
-            System.out.println(s);
-        }
-        String clientOrigin = request.getHeader("origin");
-        System.out.println(clientOrigin);
 
         PrintWriter out = response.getWriter();
         response.setContentType("text/html; charset=UTF-8");
@@ -52,11 +40,14 @@ public class HelloServlet extends HttpServlet {
 
     }
 
+    /* When we upload a file and metadata from the frontend, it is sent as multipart/form, which prompts the server
+    * to respond with an options request. We want to redirect this options to post. */
     protected void doOptions(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         doPost(request, response);
     }
 
+    /* This takes our file and metadata and does the parsing */
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
@@ -66,7 +57,6 @@ public class HelloServlet extends HttpServlet {
 
         //get client's origin domain
         String clientOrigin = request.getHeader("origin");
-        System.out.println(clientOrigin);
 
         PrintWriter out = response.getWriter();
         response.setContentType("application/json; charset=UTF-8");
@@ -83,11 +73,8 @@ public class HelloServlet extends HttpServlet {
             response.setHeader("Access-Control-Max-Age", "86400");
 
         }
-        //System.out.println(IOUtils.toString(request.getReader()));
 
-        
-        //String type = request.getParameter("type");
-        //String age = request.getParameter("age");
+        //gets sections from json body
         Part file = request.getPart("file");
         Part tags = request.getPart("tags");
         Map<String,Object> entries = new HashMap<>();
@@ -99,12 +86,13 @@ public class HelloServlet extends HttpServlet {
 
         boolean useHighlighting = tagsJsonObject.get("useHighlighting").getAsBoolean();
 
-        System.out.println(useHighlighting);
+        //gets default tags that aren't the doc body
         for(String key : tagsJsonObject.keySet()) {
             if (!key.equals("companyDoc") && !key.equals("additionalTags") && !key.equals("useHighlighting")) {
                 entries.put(key, tagsJsonObject.get(key).getAsString());
             }
         }
+        //gets any extra tags they added
         for (JsonElement e : tagsJsonObject.getAsJsonArray("additionalTags")) {
             JsonObject innerPair = e.getAsJsonObject();
             entries.put(innerPair.get("key").getAsString(), innerPair.get("value").getAsString());
@@ -114,12 +102,9 @@ public class HelloServlet extends HttpServlet {
         SearchClient.mapNewFields("10.20.10.89", 9200, "http", "rfps", "rfp", entries);
 
         //finding out which kind of office document the RFP is
-        //Choice choice;
         List<Map<String,Object>> tempstr = null;
         String contentType = file.getContentType();
         if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")){
-            System.out.println("XLSX");
-            //choice = Choice.XLSX;
             InputStream filestream = file.getInputStream();
             try {
                 ExcelParser parse = new ExcelParser(filestream, entries, true);
@@ -128,13 +113,11 @@ public class HelloServlet extends HttpServlet {
                 } else {
                     tempstr = parse.getJsonHM();
                 }
-                //System.out.println(tempstr);
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
             }
         }
         else if (contentType.equals("application/vnd.ms-excel")){
-            System.out.println("XLS");
             InputStream filestream = file.getInputStream();
             try {
                 ExcelParser parse = new ExcelParser(filestream, entries, false);
@@ -144,14 +127,11 @@ public class HelloServlet extends HttpServlet {
                 } else {
                     tempstr = parse.getJsonHM();
                 }
-                //System.out.println(tempstr);
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
             }
         }
         else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")){
-            System.out.println("DOCX");
-            //choice = Choice.DOCX;
             InputStream filestream = file.getInputStream();
             try {
                 DocxParser parse = new DocxParser(filestream, entries);
@@ -160,14 +140,12 @@ public class HelloServlet extends HttpServlet {
                 } else {
                     tempstr = parse.getSubSections();
                 }
-                //System.out.println(tempstr);
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
             }
         }
         else{
             System.out.println("ERROR");
-            //choice = Choice.ERROR;
         }
 
 
@@ -189,26 +167,18 @@ public class HelloServlet extends HttpServlet {
         for(Map<String,Object> tempmap: tempstr){
             JsonObject innerObject = new JsonObject();
             for(Map.Entry<String,Object> tempentry: tempmap.entrySet()){
-                //RIGHT HERE BUDDY
                 Gson gson = new Gson();
-
+                //replaces weird Word apostrophes with normal ones while adding to json object
                 innerObject.addProperty(tempentry.getKey(), tempentry.getValue().toString().replaceAll("[\\u2018\\u2019]", "'")
                         .replaceAll("[\\u201C\\u201D]", "\""));
             }
-            //System.out.println(jarray);
             jarray.add(indexObj);
             jarray.add(innerObject);
-            System.out.println(jarray);
             counter = counter + 1;
         }
 
         myObj.add("stuff", jarray);
-
-        //myObj.addProperty("stuff", tempstr.toString());
-        System.out.println(myObj);
         out.println(myObj);
-
-
         out.close();
     }
 }

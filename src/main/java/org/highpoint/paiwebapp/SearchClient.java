@@ -22,7 +22,6 @@ import java.util.Map;
  */
 public class SearchClient {
 
-
     /**
      * bulk indexes sections from word document
      * @param hostname hostname of elasticsearch instance

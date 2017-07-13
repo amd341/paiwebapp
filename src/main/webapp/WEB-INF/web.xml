@@ -7,14 +7,14 @@
   <display-name>Archetype Created Web Application</display-name>
   <context-param>
     <param-name>incomingURLs</param-name>
-    <param-value>http://10.20.10.89</param-value>
+    <param-value>http://10.20.10.89,http://localhost:4200</param-value>
   </context-param>
   <servlet>
-    <servlet-name>HelloServlet</servlet-name>
-    <servlet-class>org.highpoint.paiwebapp.HelloServlet</servlet-class>
+    <servlet-name>RFPServlet</servlet-name>
+    <servlet-class>org.highpoint.paiwebapp.RFPServlet</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>HelloServlet</servlet-name>
+    <servlet-name>RFPServlet</servlet-name>
     <url-pattern>/servlet</url-pattern>
   </servlet-mapping>
 

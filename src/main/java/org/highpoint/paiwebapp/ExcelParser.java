@@ -27,12 +27,12 @@ public class ExcelParser {
     private Map<String,Object> entries;
     private boolean isXLSX;
 
-    private final String XLS_QUESTION_COLOR = "9999:3333:6666";
-    private final String XLS_ANSWER_COLOR = "FFFF:FFFF:0";
+    //figuring out how these strings correlate to real colors is annoying
+    private final String XLS_QUESTION_COLOR = "9999:3333:6666"; //purple
+    private final String XLS_ANSWER_COLOR = "FFFF:FFFF:0"; //yellow
 
-    private final String XLSX_QUESTION_COLOR = "FF7030A0";
-    private final String XLSX_ANSWER_COLOR = "FFFFFF00";
-    //private static final String FILE_NAME = "/home/alex/documents/excels/enterprise.xlsx";
+    private final String XLSX_QUESTION_COLOR = "FF7030A0"; //purple
+    private final String XLSX_ANSWER_COLOR = "FFFFFF00"; //yellow
 
     public ExcelParser(InputStream input, Map<String,Object> entries, boolean isXLSX) throws IOException, InvalidFormatException {
         this.isXLSX = isXLSX;
@@ -57,8 +57,6 @@ public class ExcelParser {
 
         Sheet datatypeSheet = workbook.getSheetAt(0);
         StringBuilder body = new StringBuilder();
-        //iterator to iterate through sheets
-        //Iterator<Sheet> sheetIterator = workbook.iterator();
 
         int count = 0;
         while(count < workbook.getNumberOfSheets()){
@@ -103,6 +101,11 @@ public class ExcelParser {
         return(sectionsList);
     }
 
+    /**
+     * gets pairs of questions and answers based on highlighted sheets
+     * @return
+     * @throws JsonProcessingException
+     */
     public List<Map<String,Object>> getHighlightedJson() throws JsonProcessingException {
         List<Map<String,Object>> sections = new ArrayList<>();
         Map<String,Object> section = new HashMap<>();

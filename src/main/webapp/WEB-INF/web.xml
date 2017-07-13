@@ -7,7 +7,7 @@
   <display-name>Archetype Created Web Application</display-name>
   <context-param>
     <param-name>incomingURLs</param-name>
-    <param-value>http://localhost,http://74.199.182.34</param-value>
+    <param-value>http://10.20.10.89</param-value>
   </context-param>
   <servlet>
     <servlet-name>HelloServlet</servlet-name>

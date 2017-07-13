@@ -46,17 +46,6 @@ public class HelloServlet extends HttpServlet {
         response.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS,GET");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type");
         response.setHeader("Access-Control-Max-Age", "86400");
-        //checking if client's origin is allowed
-        int originCheckIndex = incomingURLs.indexOf(clientOrigin);
-        if (originCheckIndex != -1){
-            response.setHeader("Access-Control-Allow-Origin", clientOrigin);
-            response.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS,GET");
-            response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-            response.setHeader("Access-Control-Max-Age", "86400");
-
-            out.println("<h1>Request received</h1>");
-            //out.close();
-        }
 
         out.println("<h1>Request received</h1>");
         out.close();
@@ -122,7 +111,7 @@ public class HelloServlet extends HttpServlet {
         }
 
         //once we have entries, we have to make sure any new tags get put in as keywords, not text
-        SearchClient.mapNewFields("search-elastic-test-yyco5dncwicwd2nufqhakzek2e.us-east-1.es.amazonaws.com", 443, "https", "rfps2", "rfp2", entries);
+        SearchClient.mapNewFields("10.20.10.89", 9200, "http", "rfps", "rfp", entries);
 
         //finding out which kind of office document the RFP is
         //Choice choice;

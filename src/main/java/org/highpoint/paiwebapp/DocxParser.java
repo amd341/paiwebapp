@@ -22,7 +22,7 @@ import java.util.*;
 public class DocxParser {
 
     private XWPFDocument xdoc;
-    private Map<String,Object> entries;
+    private Map<String,String> entries;
 
     private final String DOCX_QUESTION_COLOR = "FF0000"; //red
     private final String DOCX_ANSWER_COLOR = "0070C0"; //blue
@@ -33,7 +33,7 @@ public class DocxParser {
      * @throws IOException if input filepath is wrong
      * @throws InvalidFormatException if file is not a docx
      */
-    public DocxParser(InputStream input, Map<String,Object> entries) throws IOException, InvalidFormatException {
+    public DocxParser(InputStream input, Map<String,String> entries) throws IOException, InvalidFormatException {
         xdoc = new XWPFDocument(OPCPackage.open(input));
         this.entries = entries;
 
@@ -45,9 +45,9 @@ public class DocxParser {
      * elsewhere) and returns paired question/answer values.
      * @return list of maps of string, object pairs
      */
-    public List<Map<String,Object>> getHighlighted() {
-        Map<String,Object> section = new HashMap<>();
-        List<Map<String,Object>> sections = new ArrayList<>();
+    public List<Map<String,String>> getHighlighted() {
+        Map<String,String> section = new HashMap<>();
+        List<Map<String,String>> sections = new ArrayList<>();
         List<IBodyElement> elements = xdoc.getBodyElements();
         boolean gotQuestion = false;
         StringBuilder body = new StringBuilder();
@@ -127,10 +127,10 @@ public class DocxParser {
     /**
      * pairs up heading 1's with all text until next heading 1. returns these as a list of pairs. not used.
      */
-    public List<Map<String,Object>> getSections()
+    public List<Map<String,String>> getSections()
     {
-        Map<String,Object> section = new HashMap<>();
-        List<Map<String,Object>> sections = new ArrayList<>();
+        Map<String,String> section = new HashMap<>();
+        List<Map<String,String>> sections = new ArrayList<>();
         List<IBodyElement> elements = xdoc.getBodyElements();
         String heading = "No heading";
         StringBuilder body = new StringBuilder();
@@ -188,14 +188,14 @@ public class DocxParser {
 
 
     /**
-     * @return List of Maps of String,Object pairs (always String,String though)
+     * @return List of Maps of String,String pairs (always String,String though)
      * pairs up heading 2's with all text below until next heading 2. also retains heading 1 name
      * can be used to parse word doc without highlighting but returns very large data and is slow
      */
-    public List<Map<String,Object>> getSubSections()
+    public List<Map<String,String>> getSubSections()
     {
-        Map<String,Object> section = new HashMap<>();
-        List<Map<String,Object>> sections = new ArrayList<>();
+        Map<String,String> section = new HashMap<>();
+        List<Map<String,String>> sections = new ArrayList<>();
         List<IBodyElement> elements = xdoc.getBodyElements();
         String headingOne = "No heading";
         String headingTwo = "No heading";
@@ -290,7 +290,7 @@ public class DocxParser {
      */
     public List<String> getSectionsAsStrings() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String,Object> section = new HashMap<>();
+        Map<String,String> section = new HashMap<>();
         List<String> sections = new ArrayList<>();
         List<IBodyElement> elements = xdoc.getBodyElements();
         String heading = "No heading";
@@ -354,7 +354,7 @@ public class DocxParser {
      */
     public List<String> getSubSectionsAsStrings() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String,Object> section = new HashMap<>();
+        Map<String,String> section = new HashMap<>();
         List<String> sections = new ArrayList<>();
         List<IBodyElement> elements = xdoc.getBodyElements();
         String headingOne = "No heading";
@@ -450,7 +450,7 @@ public class DocxParser {
      */
     public List<String> getHighlightedAsStrings() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String,Object> section = new HashMap<>();
+        Map<String,String> section = new HashMap<>();
         List<String> sections = new ArrayList<>();
         List<IBodyElement> elements = xdoc.getBodyElements();
         boolean gotQuestion = false;
@@ -467,7 +467,7 @@ public class DocxParser {
                         if (run.getColor() != null) {
                             if (run.getColor().equals(DOCX_QUESTION_COLOR)) {
                                 if (body.length() > 0) {
-                                    section.put("body", body);
+                                    section.put("body", body.toString());
                                     section.put("question", question);
                                     section.putAll(entries);
                                     sections.add(objectMapper.writeValueAsString(section));
@@ -498,7 +498,7 @@ public class DocxParser {
                                     if (run.getColor() != null) {
                                         if (run.getColor().equals(DOCX_QUESTION_COLOR)) {
                                             if (body.length() > 0) {
-                                                section.put("body", body);
+                                                section.put("body", body.toString());
                                                 section.put("question", question);
                                                 section.putAll(entries);
                                                 sections.add(objectMapper.writeValueAsString(section));
@@ -520,7 +520,7 @@ public class DocxParser {
             }
         }
 
-        section.put("body", body);
+        section.put("body", body.toString());
         section.put("question", question);
         section.putAll(entries);
         sections.add(objectMapper.writeValueAsString(section));

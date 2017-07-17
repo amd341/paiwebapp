@@ -65,7 +65,7 @@ public class SearchClient {
      * @return String response from server
      * @throws IOException if connection or request is bad
      */
-    public static String mapNewFields(String hostname, int port, String scheme, String index, String type, Map<String,Object> entries) throws IOException {
+    public static String mapNewFields(String hostname, int port, String scheme, String index, String type, Map<String,String> entries) throws IOException {
         RestClient restClient = RestClient.builder(
                 new HttpHost(hostname, port, scheme)).build();
 

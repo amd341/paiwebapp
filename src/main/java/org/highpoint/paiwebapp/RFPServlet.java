@@ -77,7 +77,7 @@ public class RFPServlet extends HttpServlet {
         //gets sections from json body
         Part file = request.getPart("file");
         Part tags = request.getPart("tags");
-        Map<String,Object> entries = new HashMap<>();
+        Map<String,String> entries = new HashMap<>();
 
         InputStream tagsInputStream = tags.getInputStream();
         JsonParser jsonParser = new JsonParser();
@@ -102,16 +102,16 @@ public class RFPServlet extends HttpServlet {
         SearchClient.mapNewFields("10.20.10.89", 9200, "http", "rfps", "rfp", entries);
 
         //finding out which kind of office document the RFP is
-        List<Map<String,Object>> tempstr = null;
+        List<Map<String,String>> tempstr = null;
         String contentType = file.getContentType();
         if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")){
             InputStream filestream = file.getInputStream();
             try {
                 ExcelParser parse = new ExcelParser(filestream, entries, true);
                 if (useHighlighting) {
-                    tempstr = parse.getHighlightedJson();
+                    tempstr = parse.getHighlighted();
                 } else {
-                    tempstr = parse.getJsonHM();
+                    tempstr = parse.getSheets();
                 }
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
@@ -122,10 +122,10 @@ public class RFPServlet extends HttpServlet {
             try {
                 ExcelParser parse = new ExcelParser(filestream, entries, false);
                 if (useHighlighting) {
-                    tempstr = parse.getHighlightedJson();
+                    tempstr = parse.getHighlighted();
 
                 } else {
-                    tempstr = parse.getJsonHM();
+                    tempstr = parse.getSheets();
                 }
             } catch (InvalidFormatException e) {
                 e.printStackTrace();
@@ -164,9 +164,9 @@ public class RFPServlet extends HttpServlet {
         JsonArray jarray = new JsonArray();
 
         int counter = 0;
-        for(Map<String,Object> tempmap: tempstr){
+        for(Map<String,String> tempmap: tempstr){
             JsonObject innerObject = new JsonObject();
-            for(Map.Entry<String,Object> tempentry: tempmap.entrySet()){
+            for(Map.Entry<String,String> tempentry: tempmap.entrySet()){
                 Gson gson = new Gson();
                 //replaces weird Word apostrophes with normal ones while adding to json object
                 innerObject.addProperty(tempentry.getKey(), tempentry.getValue().toString().replaceAll("[\\u2018\\u2019]", "'")

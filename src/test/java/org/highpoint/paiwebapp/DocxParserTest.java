@@ -1,28 +1,25 @@
 package org.highpoint.paiwebapp;
 
 import junit.framework.TestCase;
-import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.Assert;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.is;
 
 /**
  * Created by brenden on 7/13/17.
+ * only tests the two methods that are actually used by the application, as the others are mostly useful for testing
+ * /really aren't needed anymore, but kept around because why not
  */
 public class DocxParserTest extends TestCase {
     public void testGetHighlighted() throws Exception {
-        Map<String,Object> map = new HashMap<>();
+        Map<String,String> map = new HashMap<>();
         map.put("test","test");
 
         DocxParser p = new DocxParser(getClass().getResourceAsStream("/testh.docx"), map);
-        List<Map<String,Object>> sections = p.getHighlighted();
+        List<Map<String,String>> sections = p.getHighlighted();
 
-        Map<String,Object> expectedSection1 = new HashMap<>();
-        Map<String,Object> expectedSection2 = new HashMap<>();
+        Map<String,String> expectedSection1 = new HashMap<>();
+        Map<String,String> expectedSection2 = new HashMap<>();
 
         expectedSection1.put("question", "Test1");
         expectedSection1.put("body", "Test1");
@@ -33,57 +30,45 @@ public class DocxParserTest extends TestCase {
         expectedSection2.put("test","test");
 
 
-        List<Map<String,Object>> expectedSections = new ArrayList<>(Arrays.asList(expectedSection1,expectedSection2));
+        List<Map<String,String>> expectedSections = new ArrayList<>(Arrays.asList(expectedSection1,expectedSection2));
         assertEquals(expectedSections, sections);
 
 
     }
 
-    public void testGetSubSections() throws Exception {
+    /*this test may give some insight about when Word will add newlines. Although for our purposes, the newlines
+    * are inconsequential, it may still be useful to know, or at least have an idea about this, as it's hidden elsewhere.
+    * From what I've seen, one is added if you're right before a heading, and a bunch are added with tables/end of document? */
+    public void testGetSubsections() throws Exception {
+        Map<String,String> map = new HashMap<>();
+        map.put("test","test");
 
-        //heading, then paragraph, then heading, then table
-        Map<String,Object> map = new HashMap<>();
-        map.put("test", "test");
         DocxParser p = new DocxParser(getClass().getResourceAsStream("/test.docx"), map);
-        List<Map<String,Object>> sections = p.getSections();
+        List<Map<String,String>> sections = p.getSubSections();
 
-        Map<String,Object> expectedSection1 = new HashMap<>();
-        Map<String,Object> expectedSection2 = new HashMap<>();
-        expectedSection1.put("heading","Heading 1");
-        expectedSection1.put("body", "Paragraph\n");
-        expectedSection1.put("test", "test");
-        expectedSection2.put("heading", "Heading 1");
-        expectedSection2.put("body", "Table\n\n\n");
-        expectedSection2.put("test","test");
-        List<Map<String,Object>> expectedSections = new ArrayList<>(Arrays.asList(expectedSection1,expectedSection2));
+        List<Map<String,String>> expectedSections = new ArrayList<>();
 
-        assertEquals(expectedSections, sections);
+        Map<String,String> expectedSection = new HashMap<>();
 
-        //heading, then table, then heading, then paragraph
-        p = new DocxParser(getClass().getResourceAsStream("/test1.docx"), map);
-        sections = p.getSections();
-        expectedSection2.put("body", "Table\n\n");
-        expectedSections = new ArrayList<>(Arrays.asList(expectedSection2,expectedSection1));
+        expectedSection.put("headingOne", "H1");
+        expectedSection.put("headingTwo", "H2");
+        expectedSection.put("body","Text\n");
+        expectedSection.put("test","test");
 
-        assertEquals(expectedSections, sections);
+        expectedSections.add(expectedSection);
+        expectedSection = new HashMap<>();
 
-        //only paragraph
-        p = new DocxParser(getClass().getResourceAsStream("/test2.docx"), map);
-        sections = p.getSections();
-        expectedSection1.put("heading", "No heading");
-        expectedSections = new ArrayList<>(Collections.singletonList(expectedSection1));
+        expectedSection.put("headingOne", "H1");
+        expectedSection.put("headingTwo", "H2");
+        expectedSection.put("test","test");
+        expectedSection.put("body","More\n\n\n");
+
+        expectedSections.add(expectedSection);
 
         assertEquals(expectedSections, sections);
 
-        //only table
-        p = new DocxParser(getClass().getResourceAsStream("/test3.docx"), map);
-        sections = p.getSections();
 
-        expectedSection2.put("body", "Table\n\n\n"); //newlines are hard
-        expectedSection2.put("heading", "No heading");
-        expectedSections = new ArrayList<>(Collections.singletonList(expectedSection2));
 
-        assertEquals(expectedSections, sections);
     }
 
 }

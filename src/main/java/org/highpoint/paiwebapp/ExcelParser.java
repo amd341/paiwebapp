@@ -51,7 +51,7 @@ public class ExcelParser {
 
     /**
      * gets pairs of questions and answers based on highlighted sheets
-     * I think that this method should not be an option for use. It doesn't really return meaningful data.
+     *
      * @throws JsonProcessingException
      */
     public List<Map<String,String>> getHighlighted() throws JsonProcessingException {
@@ -74,7 +74,6 @@ public class ExcelParser {
                             HSSFCell cell = row.getCell(k);
                             if (cell != null) {
                                 HSSFColor color = cell.getCellStyle().getFillForegroundColorColor();
-                                System.out.println(color.getHexString());
                                 if (color != null && XLS_QUESTION_COLORS.contains(color.getHexString()) && !gotQuestion) {
                                     if (cell.getCellTypeEnum() == CellType.NUMERIC) {
                                         question = String.valueOf(cell.getNumericCellValue());
@@ -91,7 +90,6 @@ public class ExcelParser {
                                         section.putAll(entries);
                                         sections.add(section);
                                         section = new HashMap<>();
-                                        gotQuestion = false;
                                     } else if (cell.getCellTypeEnum() == CellType.STRING) {
                                         body = cell.getRichStringCellValue().getString();
                                         section.put("question", question);
@@ -99,13 +97,13 @@ public class ExcelParser {
                                         section.putAll(entries);
                                         sections.add(section);
                                         section = new HashMap<>();
-                                        gotQuestion = false;
 
                                     }
                                 }
                             }
                             k++;
                         }
+                        gotQuestion = false;
                     }
 
                     j++;
@@ -143,7 +141,6 @@ public class ExcelParser {
                                         section.putAll(entries);
                                         sections.add(section);
                                         section = new HashMap<>();
-                                        gotQuestion = false;
                                     } else if (cell.getCellTypeEnum() == CellType.STRING) {
                                         body = cell.getRichStringCellValue().getString();
                                         section.put("question", question);
@@ -151,13 +148,13 @@ public class ExcelParser {
                                         section.putAll(entries);
                                         sections.add(section);
                                         section = new HashMap<>();
-                                        gotQuestion = false;
 
                                     }
                                 }
                             }
                             k++;
                         }
+                        gotQuestion = false;
                     }
 
                     j++;
@@ -171,6 +168,7 @@ public class ExcelParser {
 
     }
 
+    //I think that this method should not be an option for use. It doesn't really return meaningful data.
     public List<Map<String,String>> getSheets() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String,String> sectionHash = new HashMap<>();

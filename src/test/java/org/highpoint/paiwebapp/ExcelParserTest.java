@@ -31,7 +31,14 @@ public class ExcelParserTest extends TestCase {
 
         expectedSection.put("test", "test");
         expectedSection.put("question","Q2");
-        expectedSection.put("body","A2");
+        expectedSection.put("body","A2a");
+
+        expectedSections.add(expectedSection);
+        expectedSection = new HashMap<>();
+
+        expectedSection.put("test", "test");
+        expectedSection.put("question","Q2");
+        expectedSection.put("body","A2b");
 
         expectedSections.add(expectedSection);
         expectedSection = new HashMap<>();
@@ -41,7 +48,6 @@ public class ExcelParserTest extends TestCase {
         expectedSection.put("body","A3");
 
         expectedSections.add(expectedSection);
-
 
         assertEquals(expectedSections, sectionsOne);
         assertEquals(expectedSections, sectionsTwo);
